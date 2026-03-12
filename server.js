@@ -9,22 +9,33 @@ app.use(express.json());
 // Fetch catalog items
 app.get('/catalog', async (req, res) => {
     try {
-        const category = req.query.category || '3';
         const limit = req.query.limit || 30;
         const cursor = req.query.cursor || '';
+        const keyword = req.query.keyword || '';
+        const creatorName = req.query.creatorName || '';
+        const Category = req.query.Category || '3';
+        const Subcategory = req.query.Subcategory || '';
+        const SortType = req.query.SortType || '0';
+
+        const params = {
+            Category,
+            Limit: limit,
+            SortType,
+        };
+
+        if (Subcategory !== '') params.Subcategory = Subcategory;
+        if (cursor !== '') params.Cursor = cursor;
+        if (keyword !== '') params.keyword = keyword;
+        if (creatorName !== '') params.creatorName = creatorName;
 
         const response = await axios.get(
-            'https://catalog.roblox.com/v1/search/items/details', {
-            params: {
-                Category: category,
-                Limit: limit,
-                Cursor: cursor,
-                SortType: 0
-            }
-        });
+            'https://catalog.roblox.com/v1/search/items/details',
+            { params }
+        );
 
         res.json(response.data);
     } catch (error) {
+        console.error(error?.response?.data || error.message);
         res.status(500).json({ error: 'Failed to fetch catalog' });
     }
 });
@@ -67,4 +78,5 @@ app.get('/item/:itemId', async (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Catalog proxy running on port ${PORT}`);
+
 });
